@@ -112,9 +112,11 @@ button { cursor: pointer; }
   background: #fffdf9;
 }
 
-.btn-line { width: 100%; margin-top: 8px; }
+.btn-block { width: 100%; margin-top: 8px; }
 
-.btn-ghost { margin-top: 10px; }
+.panel-right .btn-ghost, .status .btn-ghost { margin-top: 10px; }
+
+.btn-danger { color: #9c3b2e; border-color: #e3c2b6; background: #fffdf9; }
 
 .btn-tool { padding: 7px 10px; background: rgba(247, 244, 238, 0.92); }
 
@@ -259,9 +261,111 @@ textarea { resize: vertical; min-height: 120px; }
   border: 0;
 }
 
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 28px 32px 48px;
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.lead, .registry-meta, .registry-desc { margin: 0; color: #5e564c; }
+
+.lead { max-width: 68ch; }
+
+.registry { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+
+.registry-card, .empty-card, .form-card {
+  background: #f7f4ee;
+  border: 1px solid #ddd4c6;
+  padding: 16px 18px;
+}
+
+.registry-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.registry-card h2, .empty-card h2 { margin: 0 0 4px; font-size: 20px; }
+
+.registry-desc { margin-top: 6px; }
+
+.registry-actions, .top-actions, .form-actions, .part-card-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.registry-actions, .top-actions { flex: none; }
+
+.btn-dark {
+  border: 1px solid #5c534a;
+  color: #f6f1e8;
+  background: transparent;
+}
+
+.register-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(460px, 1.15fr) minmax(340px, 0.85fr);
+}
+
+.register-form {
+  overflow: auto;
+  padding: 22px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.form-grid, .part-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+
+.field { display: grid; gap: 4px; }
+
+.field.wide { grid-column: 1 / -1; }
+
+.field span {
+  color: #7a7166;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  border: 1px solid #d5cdbf;
+  background: #fffdf9;
+  border-radius: 2px;
+  padding: 9px 10px;
+}
+
+.part-list { display: grid; gap: 10px; margin-bottom: 12px; }
+
+.part-card { border: 1px solid #e4dccf; background: #fffdf9; padding: 12px; }
+
+.part-card.is-active { border-color: #e0b134; background: #fffaf0; }
+
+.part-card-head { justify-content: space-between; }
+
+.form-error { margin: 0; padding: 12px; background: #f8ece6; border: 1px solid #e3c2b6; }
+
+.register-stage { min-height: 360px; }
+
 @media (max-width: 980px) {
-  .workspace { grid-template-columns: 1fr; }
+  .workspace, .register-layout { grid-template-columns: 1fr; }
   .panel { border: 0; border-bottom: 1px solid #ddd4c6; }
   .qr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .equip-meta { display: none; }
+  .registry-card, .page-head { flex-direction: column; align-items: stretch; }
+  .register-stage { height: 420px; }
 }

@@ -14,9 +14,17 @@ type Props = {
   candidateIds: string[]
   onSelect: (id: string) => void
   apiRef: MutableRefObject<ViewApi | null>
+  followSelection?: boolean
 }
 
-export default function AssemblyScene({ parts, selectedId, candidateIds, onSelect, apiRef }: Props) {
+export default function AssemblyScene({
+  parts,
+  selectedId,
+  candidateIds,
+  onSelect,
+  apiRef,
+  followSelection = true,
+}: Props) {
   return (
     <>
       <color attach="background" args={['#d7d0c4']} />
@@ -40,7 +48,7 @@ export default function AssemblyScene({ parts, selectedId, candidateIds, onSelec
         <meshStandardMaterial color="#cfc6b8" />
       </mesh>
       <gridHelper args={[8, 16, '#b7ad9e', '#e3dcd0']} position={[0, 0.002, 0]} />
-      {parts.map((part) => (
+      {parts.filter((part) => part.shapes.length > 0).map((part) => (
         <PartGroup
           key={part.id}
           part={part}
@@ -50,7 +58,14 @@ export default function AssemblyScene({ parts, selectedId, candidateIds, onSelec
           onSelect={onSelect}
         />
       ))}
-      <ViewRig apiRef={apiRef} focus={parts.find((part) => part.id === selectedId)?.position ?? null} />
+      <ViewRig
+        apiRef={apiRef}
+        focus={
+          followSelection
+            ? (parts.find((part) => part.id === selectedId && part.shapes.length > 0)?.position ?? null)
+            : null
+        }
+      />
     </>
   )
 }

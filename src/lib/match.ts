@@ -25,6 +25,8 @@ export function findParts(parts: Part[], raw: string): Part[] {
     (part) =>
       part.partNo.toLowerCase().includes(query) ||
       part.name.toLowerCase().includes(query) ||
-      part.location.toLowerCase().includes(query),
+      part.location.toLowerCase().includes(query) ||
+      part.drawingNo.toLowerCase().includes(query) ||
+      part.revision.toLowerCase().includes(query),
   )
 }

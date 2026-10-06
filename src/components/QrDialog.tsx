@@ -1,19 +1,15 @@
 import QRCode from 'qrcode'
 import { useEffect, useRef, useState } from 'react'
 
-const SAMPLES = [
-  { code: 'MTR-2200', label: 'Single match' },
-  { code: 'BLT-M12', label: 'Four matches' },
-  { code: 'FLG-5010', label: 'Inlet flange' },
-  { code: 'NO-PART', label: 'No match' },
-]
+export type QrSample = { code: string; label: string }
 
 type Props = {
+  samples: QrSample[]
   onClose: () => void
   onCode: (code: string) => void
 }
 
-export default function QrDialog({ onClose, onCode }: Props) {
+export default function QrDialog({ samples, onClose, onCode }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [images, setImages] = useState<Record<string, string>>({})
   const [cameraOn, setCameraOn] = useState(false)
@@ -22,7 +18,7 @@ export default function QrDialog({ onClose, onCode }: Props) {
   useEffect(() => {
     let cancel = false
     void Promise.all(
-      SAMPLES.map(async (sample) => {
+      samples.map(async (sample) => {
         const url = await QRCode.toDataURL(sample.code, {
           margin: 1,
           width: 160,
@@ -36,7 +32,7 @@ export default function QrDialog({ onClose, onCode }: Props) {
     return () => {
       cancel = true
     }
-  }, [])
+  }, [samples])
 
   useEffect(() => {
     const video = videoRef.current
@@ -115,7 +111,7 @@ export default function QrDialog({ onClose, onCode }: Props) {
         <video ref={videoRef} className={cameraOn ? 'qr-video' : 'qr-video is-hidden'} muted playsInline />
         <p className="kicker">Sample tags</p>
         <div className="qr-grid">
-          {SAMPLES.map((sample) => (
+          {samples.map((sample) => (
             <button key={sample.code} type="button" className="qr-card" onClick={() => onCode(sample.code)}>
               {images[sample.code] ? <img src={images[sample.code]} alt="" /> : <span className="qr-placeholder" />}
               <span className="mono">{sample.code}</span>

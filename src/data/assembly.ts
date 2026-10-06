@@ -1,4 +1,4 @@
-import type { Part, Vec3 } from '../types'
+import type { ComponentSlot, EquipmentRecord, Part, Vec3 } from '../types'
 
 const alongX: Vec3 = [0, 0, Math.PI / 2]
 const alongZ: Vec3 = [Math.PI / 2, 0, 0]
@@ -11,7 +11,9 @@ export const equipment = {
   revision: 'A',
 }
 
-export const parts: Part[] = [
+type MeshPart = Omit<Part, 'drawingNo' | 'quantity' | 'revision' | 'componentId'>
+
+const parts: MeshPart[] = [
   {
     id: 'base',
     partNo: 'BP-1001',
@@ -139,7 +141,7 @@ export const parts: Part[] = [
   bolt('bolt-rr', 'Rear-right corner', [1.15, 0.145, -0.48]),
 ]
 
-function bolt(id: string, location: string, position: Vec3): Part {
+function bolt(id: string, location: string, position: Vec3): MeshPart {
   return {
     id,
     partNo: 'BLT-M12',
@@ -154,6 +156,35 @@ function bolt(id: string, location: string, position: Vec3): Part {
   }
 }
 
-export function partById(id: string): Part | undefined {
-  return parts.find((part) => part.id === id)
+export const components: ComponentSlot[] = parts.map((part) => ({
+  id: part.id,
+  label: part.name,
+  location: part.location,
+  color: part.color,
+  position: part.position,
+  rotation: part.rotation,
+  shapes: part.shapes,
+}))
+
+export const sampleEquipment: EquipmentRecord = {
+  id: 'cps-100',
+  model: equipment.model,
+  name: equipment.name,
+  assemblyNo: equipment.assemblyNo,
+  revision: equipment.revision,
+  description: 'Sample cooling pump skid. Edit the part list from registration.',
+  parts: parts.map((part) => ({
+    id: part.id,
+    partNo: part.partNo,
+    name: part.name,
+    drawingNo: '',
+    quantity: '1',
+    revision: '',
+    location: part.location,
+    componentId: part.id,
+  })),
+}
+
+export function componentById(id: string): ComponentSlot | undefined {
+  return components.find((slot) => slot.id === id)
 }

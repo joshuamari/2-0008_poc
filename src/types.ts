@@ -17,11 +17,46 @@ export type Shape =
       color?: string
     }
 
+export type ComponentSlot = {
+  id: string
+  label: string
+  location: string
+  color: string
+  position: Vec3
+  rotation?: Vec3
+  shapes: Shape[]
+}
+
+export type BomLine = {
+  id: string
+  partNo: string
+  name: string
+  drawingNo: string
+  quantity: string
+  revision: string
+  location: string
+  componentId: string
+}
+
+export type EquipmentRecord = {
+  id: string
+  model: string
+  name: string
+  assemblyNo: string
+  revision: string
+  description: string
+  parts: BomLine[]
+}
+
 export type Part = {
   id: string
   partNo: string
   name: string
   location: string
+  drawingNo: string
+  quantity: string
+  revision: string
+  componentId: string
   color: string
   position: Vec3
   rotation?: Vec3
