@@ -102,7 +102,7 @@ const parts: MeshPart[] = [
     name: 'Inlet Flange',
     location: 'Pump suction, front',
     color: '#7e8b98',
-    position: [0.5, 0.28, 0.62],
+    position: [0.5, 0.4, 0.64],
     shapes: [
       { kind: 'cylinder', radius: 0.06, height: 0.28, rotation: alongZ },
       {
@@ -120,7 +120,7 @@ const parts: MeshPart[] = [
     name: 'Outlet Flange',
     location: 'Pump discharge, top',
     color: '#8d99a6',
-    position: [0.62, 0.78, 0],
+    position: [0.5, 0.78, 0],
     shapes: [
       { kind: 'cylinder', radius: 0.06, height: 0.34 },
       { kind: 'cylinder', radius: 0.13, height: 0.035, position: [0, 0.18, 0] },
@@ -173,6 +173,7 @@ export const sampleEquipment: EquipmentRecord = {
   assemblyNo: equipment.assemblyNo,
   revision: equipment.revision,
   description: 'Sample cooling pump skid. Edit the part list from registration.',
+  modelFileName: '',
   parts: parts.map((part) => ({
     id: part.id,
     partNo: part.partNo,

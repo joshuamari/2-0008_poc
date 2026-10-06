@@ -173,6 +173,67 @@ button { cursor: pointer; }
 
 .stage canvas { display: block; }
 
+.stage-status {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  pointer-events: none;
+}
+
+.stage-status p {
+  margin: 0;
+  padding: 7px 10px;
+  background: rgba(247, 244, 238, 0.92);
+  color: #4e473f;
+  font-size: 13px;
+}
+
+.model-file {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.model-file p {
+  margin: 0;
+  color: #5e564c;
+  font-size: 14px;
+}
+
+.field .form-error { margin-top: 8px; }
+
+.model-parts { display: grid; gap: 6px; margin-top: 10px; }
+
+.model-parts-note { margin: 0; color: #5e564c; font-size: 14px; }
+
+.model-parts ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+
+.model-part {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border: 1px solid #e4dccf;
+  background: #fffdf9;
+  border-radius: 2px;
+  padding: 8px 10px;
+}
+
+.model-part.is-selected { border-color: #e0b134; background: #fff6df; }
+
+.model-part-index {
+  width: 1.5rem;
+  flex: none;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  color: #7a7166;
+}
+
 .toolbar {
   position: absolute;
   left: 16px;

@@ -2,9 +2,11 @@ import { Canvas } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { componentById } from '../data/assembly'
 import { findParts } from '../lib/match'
+import { useStoredModel } from '../lib/models'
 import { viewParts } from '../lib/registry'
 import type { EquipmentRecord, MatchResult, ViewApi } from '../types'
 import AssemblyScene from './AssemblyScene'
+import GlbScene from './GlbScene'
 import QrDialog from './QrDialog'
 
 const NOTES_KEY = '2-0008-notes'
@@ -22,7 +24,14 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [qrOpen, setQrOpen] = useState(false)
   const [notes, setNotes] = useState<Record<string, string>>(() => readNotes())
+  const [readyUrl, setReadyUrl] = useState<string | null>(null)
+  const [modelMessage, setModelMessage] = useState<string | null>(null)
+  const [fileSelection, setFileSelection] = useState<string | null>(null)
   const apiRef = useRef<ViewApi | null>(null)
+  const stored = useStoredModel(record.id, record.modelFileName ?? '')
+  const usingModel = Boolean(record.modelFileName)
+  const modelUrl = stored.url
+  const showLoading = usingModel && !stored.error && !modelMessage && (!modelUrl || readyUrl !== modelUrl)
   const selected = parts.find((part) => part.id === selectedId)
   const candidateIds = result?.kind === 'multiple' ? result.ids : []
   const samples = useMemo(() => qrSamples(parts), [parts])
@@ -37,24 +46,33 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
     if (matches.length === 0) {
       setResult({ kind: 'none', source, ids: [] })
       setSelectedId(null)
+      setFileSelection(null)
       return
     }
     if (matches.length === 1) {
       setResult({ kind: 'single', source, ids: [matches[0].id] })
       setSelectedId(matches[0].id)
+      setFileSelection(matches[0].componentId || null)
       return
     }
     setResult({ kind: 'multiple', source, ids: matches.map((part) => part.id) })
     setSelectedId(null)
+    setFileSelection(null)
   }
 
   const selectPart = (id: string) => {
+    const part = parts.find((item) => item.id === id)
     setSelectedId(id)
+    setFileSelection(part?.componentId || null)
     setResult((current) => {
       if (current?.kind === 'multiple' && current.ids.includes(id)) return current
-      const part = parts.find((item) => item.id === id)
       return { kind: 'single', source: part?.partNo ?? id, ids: [id] }
     })
+  }
+
+  const clearHighlight = () => {
+    setSelectedId(null)
+    setFileSelection(null)
   }
 
   const status = useMemo(() => {
@@ -64,7 +82,9 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
     return `${result.ids.length} matches for “${result.source}”. Choose one.`
   }, [result])
 
-  const linked = selected ? componentById(selected.componentId) : undefined
+  const linkedLabel = selected?.componentId
+    ? (componentById(selected.componentId)?.label ?? selected.componentId)
+    : 'Not linked'
 
   return (
     <>
@@ -124,6 +144,34 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
             <p className="hint">Search by part number, name, or drawing number.</p>
           </div>
 
+          {stored.components.length > 0 && (
+            <div className="model-parts">
+              <p className="kicker">{stored.components.length} part{stored.components.length === 1 ? '' : 's'} in this file</p>
+              <p className="model-parts-note">Names come from the model. Click one to highlight it.</p>
+              <ul>
+                {stored.components.map((component, index) => {
+                  const part = parts.find((item) => item.componentId === component.id)
+                  const highlighted = (fileSelection || selected?.componentId) === component.id
+                  return (
+                    <li key={component.id}>
+                      <button
+                        type="button"
+                        className={highlighted ? 'model-part is-selected' : 'model-part'}
+                        onClick={() => {
+                          if (part) selectPart(part.id)
+                          else setFileSelection(component.id)
+                        }}
+                      >
+                        <span className="model-part-index">{index + 1}</span>
+                        <span>{part?.name && part.name !== component.label ? part.name : component.label}</span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )}
+
           {result && (
             <div className={`status status-${result.kind}`} role="status">
               <p>{status}</p>
@@ -134,7 +182,7 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
                   onClick={() => {
                     setQuery('')
                     setResult(null)
-                    setSelectedId(null)
+                    clearHighlight()
                   }}
                 >
                   Search again
@@ -150,7 +198,7 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
                         <button
                           type="button"
                           className={id === selectedId ? 'candidate is-selected' : 'candidate'}
-                          onClick={() => setSelectedId(id)}
+                          onClick={() => selectPart(id)}
                         >
                           <span className="mono">{part.partNo}</span>
                           <span>{part.name}</span>
@@ -191,21 +239,54 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
         </section>
 
         <section className="stage" aria-label="3D assembly">
+          {(usingModel || showLoading || stored.error || modelMessage) && (
+            <div className="stage-status">
+              {usingModel && <p>{record.modelFileName}</p>}
+              {showLoading && <p>Loading model…</p>}
+              {(modelMessage || stored.error) && <p>{modelMessage || stored.error}</p>}
+            </div>
+          )}
           <Canvas
-            key={record.id}
+            key={`${record.id}-${usingModel ? 'glb' : 'sample'}`}
             shadows
-            camera={{ position: [2.05, 1.55, 2.35], fov: 42 }}
+            camera={
+              usingModel
+                ? { position: [2.05, 1.55, 2.35], fov: 42, near: 0.01, far: 100000 }
+                : { position: [2.05, 1.55, 2.35], fov: 42 }
+            }
             onPointerMissed={() => {
               document.body.style.cursor = 'default'
             }}
           >
-            <AssemblyScene
-              parts={parts}
-              selectedId={selectedId}
-              candidateIds={candidateIds}
-              onSelect={selectPart}
-              apiRef={apiRef}
-            />
+            {modelUrl ? (
+              <GlbScene
+                url={modelUrl}
+                components={stored.components}
+                selectedId={fileSelection || selected?.componentId || null}
+                candidateIds={candidateIds.flatMap((id) => {
+                  const componentId = parts.find((part) => part.id === id)?.componentId
+                  return componentId ? [componentId] : []
+                })}
+                onSelect={(componentId) => {
+                  const part = parts.find((item) => item.componentId === componentId)
+                  if (part) selectPart(part.id)
+                  else setFileSelection(componentId)
+                }}
+                onReady={() => setReadyUrl(modelUrl)}
+                onError={(message) => setModelMessage(message)}
+                apiRef={apiRef}
+              />
+            ) : usingModel ? (
+              <color attach="background" args={['#d7d0c4']} />
+            ) : (
+              <AssemblyScene
+                parts={parts}
+                selectedId={selectedId}
+                candidateIds={candidateIds}
+                onSelect={selectPart}
+                apiRef={apiRef}
+              />
+            )}
           </Canvas>
           <div className="toolbar">
             <button type="button" className="btn btn-tool" onClick={() => apiRef.current?.zoomOut()}>
@@ -232,7 +313,7 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
                 <Fact label="Quantity" value={selected.quantity} />
                 <Fact label="Revision" value={selected.revision} />
                 <Fact label="Location" value={selected.location} />
-                <Fact label="3D component" value={linked?.label ?? 'Not linked'} />
+                <Fact label="3D component" value={linkedLabel} />
               </dl>
               <label className="notes-label" htmlFor="part-notes">
                 Notes
@@ -246,7 +327,7 @@ export default function Viewer({ record, onBack, onEdit }: Props) {
                 placeholder="Shop note for this part"
                 rows={6}
               />
-              <button type="button" className="btn btn-ghost" onClick={() => setSelectedId(null)}>
+              <button type="button" className="btn btn-ghost" onClick={clearHighlight}>
                 Clear highlight
               </button>
             </>

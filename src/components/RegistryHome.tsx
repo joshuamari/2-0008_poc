@@ -29,8 +29,8 @@ export default function RegistryHome({ records, onOpen, onEdit, onCreate, onDele
           <div>
             <p className="kicker">Registered assemblies</p>
             <p className="lead">
-              Enter equipment and parts by hand, then link each part to a component on the sample model. Records stay in
-              this browser. A database is not used.
+              Register an assembly and upload a GLB model, then link each part to a mesh in that file. Until a model is
+              uploaded, the sample skid is shown. Records stay in this browser.
             </p>
           </div>
           <button type="button" className="btn btn-primary" onClick={onCreate}>
@@ -50,7 +50,13 @@ export default function RegistryHome({ records, onOpen, onEdit, onCreate, onDele
                 <div>
                   <h2>{record.name || 'Untitled assembly'}</h2>
                   <p className="registry-meta">
-                    {[record.model, record.assemblyNo, record.revision && `Rev ${record.revision}`, partCount(record.parts.length)]
+                    {[
+                      record.model,
+                      record.assemblyNo,
+                      record.revision && `Rev ${record.revision}`,
+                      partCount(record.parts.length),
+                      record.modelFileName && `Model ${record.modelFileName}`,
+                    ]
                       .filter(Boolean)
                       .join(' · ')}
                   </p>

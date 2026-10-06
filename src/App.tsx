@@ -2,6 +2,7 @@ import { useState } from 'react'
 import RegisterScreen from './components/RegisterScreen'
 import RegistryHome from './components/RegistryHome'
 import Viewer from './components/Viewer'
+import { deleteModel } from './lib/models'
 import { blankEquipment, loadRegistry, saveRegistry } from './lib/registry'
 import type { EquipmentRecord } from './types'
 
@@ -61,7 +62,10 @@ export default function App() {
         onOpen={(id) => setScreen({ name: 'view', id })}
         onEdit={(id) => setScreen({ name: 'edit', id })}
         onCreate={() => setScreen({ name: 'edit', id: null })}
-        onDelete={(id) => persist(records.filter((record) => record.id !== id))}
+        onDelete={(id) => {
+          void deleteModel(id)
+          persist(records.filter((record) => record.id !== id))
+        }}
       />
     </div>
   )

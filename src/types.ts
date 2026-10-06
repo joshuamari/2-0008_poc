@@ -45,6 +45,7 @@ export type EquipmentRecord = {
   assemblyNo: string
   revision: string
   description: string
+  modelFileName?: string
   parts: BomLine[]
 }
 

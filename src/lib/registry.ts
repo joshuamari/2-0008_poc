@@ -28,6 +28,7 @@ export function blankEquipment(): EquipmentRecord {
     assemblyNo: '',
     revision: '',
     description: '',
+    modelFileName: '',
     parts: [blankPart()],
   }
 }
@@ -75,7 +76,7 @@ export function viewParts(record: EquipmentRecord): Part[] {
       quantity: line.quantity,
       revision: line.revision,
       componentId: line.componentId,
-      color: slot?.color ?? '#8a8178',
+      color: slot?.color ?? colorForKey(line.componentId || line.id),
       position: slot?.position ?? [0, 0, 0],
       rotation: slot?.rotation,
       shapes: slot?.shapes ?? [],
@@ -123,6 +124,7 @@ export function cleanEquipment(record: EquipmentRecord): EquipmentRecord {
     assemblyNo: record.assemblyNo.trim(),
     revision: record.revision.trim(),
     description: record.description.trim(),
+    modelFileName: record.modelFileName?.trim() ?? '',
     parts: record.parts.filter((part) => !isEmptyPart(part)).map((part) => ({
       ...part,
       partNo: part.partNo.trim(),
@@ -133,6 +135,14 @@ export function cleanEquipment(record: EquipmentRecord): EquipmentRecord {
       location: part.location.trim(),
     })),
   }
+}
+
+const PART_COLORS = ['#5b656f', '#2c4d73', '#c4622d', '#e0b134', '#0e6b66', '#6f4e7c', '#8d4a4a', '#3d6b4f']
+
+function colorForKey(key: string): string {
+  let hash = 0
+  for (let index = 0; index < key.length; index += 1) hash = (hash * 33 + key.charCodeAt(index)) >>> 0
+  return PART_COLORS[hash % PART_COLORS.length]
 }
 
 function isEmptyPart(part: BomLine): boolean {
